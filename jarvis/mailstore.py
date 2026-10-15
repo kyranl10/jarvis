@@ -8,7 +8,7 @@ The refresh decrypts it and publishes the result to the private ntfy "-mail" top
   python -m jarvis.mailstore show            print the decrypted data
   python -m jarvis.mailstore seal FILE       encrypt a JSON file into data/mail.enc
   python -m jarvis.mailstore merge FILE      add a triage run's results: {"seen": [thread ids], "flagged": [items]}
-  python -m jarvis.mailstore sync FILE       mirror Jarvis Mail decisions: [{"id", "status", "subject"?, "at"?}]
+  python -m jarvis.mailstore sync FILE       mirror Jarvis Mail decisions: [{"id", "status", "subject"?, "at"?, "plan"?}]
 
 merge and sync also drop what's past its time (seen ids and flagged items after 4 days, dismissals after 3),
 set "updated", and print whether anything changed, so the tasks know whether to commit.
@@ -101,13 +101,17 @@ def tidy(data: dict, now: datetime) -> dict:
 
 
 def merge(data: dict, run: dict, now: datetime) -> dict:
-    """A triage run's new seen ids and flagged items (an item with an existing id replaces it, keeping its status)."""
+    """A triage run's new seen ids and flagged items (an item with an existing id replaces it, keeping its status
+    and any plan made on request)."""
     data = dict(data)
     data["seen"] = list(data.get("seen", [])) + [i for i in run.get("seen", []) if i not in data.get("seen", [])]
     old = {i.get("id"): i for i in data.get("flagged", [])}
     for item in run.get("flagged", []):
-        if item.get("id") in old and "status" in old[item["id"]]:
-            item = {**item, "status": old[item["id"]]["status"]}
+        was = old.get(item.get("id"), {})
+        if "status" in was:
+            item = {**item, "status": was["status"]}
+        if was.get("plan") and not item.get("plan"):
+            item = {**item, "plan": was["plan"]}
         old[item.get("id")] = item
     data["flagged"] = list(old.values())
     return tidy(data, now)
@@ -123,6 +127,8 @@ def sync(data: dict, decisions: list[dict], now: datetime) -> dict:
         status, item = d.get("status"), flagged.get(d.get("id"))
         dismissed = [x for x in dismissed if x.get("id") != d.get("id")]
         if item is not None:
+            if isinstance(d.get("plan"), dict):  # a plan asked for in Jarvis Mail, HUD-safe copy
+                item["plan"] = d["plan"]
             if status in ("denied", "done"):
                 item["status"] = status
             else:

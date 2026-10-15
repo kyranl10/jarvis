@@ -81,3 +81,11 @@ def test_merge_cli_reports_unchanged(tmp_path, monkeypatch, capsys):
     mailstore.main(["merge", str(run)])
     assert capsys.readouterr().out.splitlines()[-1] == "unchanged"
     assert mailstore.read(tmp_path / "mail.enc")["seen"] == [FRESH_ID]
+
+
+def test_plans_made_on_request_reach_the_hud_and_survive_a_rerun():
+    plan = {"summary": "Worth it.", "steps": [{"who": "you", "text": "Apply."}]}
+    out = mailstore.sync({"flagged": [item("a")]}, [{"id": "a", "status": "open", "plan": plan}], NOW)
+    assert out["flagged"][0]["plan"] == plan
+    out = mailstore.merge(out, {"flagged": [dict(item("a"), plan=None)]}, NOW)
+    assert out["flagged"][0]["plan"] == plan

@@ -32,7 +32,7 @@ def load(now: datetime, path: Path | None = None, keep_hours: int = 72) -> dict 
             gone.append({k: item.get(k, "") for k in ("id", "at", "from", "subject", "level")})
         if item.get("status") in CLOSED:
             continue  # dismissed or finished in Jarvis Mail
-        items.append({k: item.get(k, "") for k in ("id", "at", "from", "subject", "why", "level", "url")})  # id: the item in Jarvis Mail
+        items.append({k: item.get(k, "") for k in ("id", "at", "from", "subject", "gist", "why", "level", "url")})  # id: the item in Jarvis Mail
         if isinstance(item.get("plan"), dict):  # the recommended plan, kept free of names and addresses
             items[-1]["plan"] = item["plan"]
     items.sort(key=lambda i: i["at"], reverse=True)
@@ -44,6 +44,8 @@ def load(now: datetime, path: Path | None = None, keep_hours: int = 72) -> dict 
         out["dismissed"].pop()  # the dismissed list goes first
     while len(json.dumps(out, ensure_ascii=False).encode("utf-8")) > LIMIT and any("plan" in i for i in items):
         next(i for i in reversed(items) if "plan" in i).pop("plan")  # plans go before items; the HUD links to them
+    while len(json.dumps(out, ensure_ascii=False).encode("utf-8")) > LIMIT and any(i.get("gist") for i in items):
+        next(i for i in reversed(items) if i.get("gist"))["gist"] = ""  # then the oldest gists; "why" still says enough
     while len(json.dumps(out, ensure_ascii=False).encode("utf-8")) > LIMIT and out["flagged"]:
         out["flagged"].pop()  # the least important, oldest item goes first
     return out

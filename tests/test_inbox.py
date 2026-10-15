@@ -159,3 +159,10 @@ def test_canvas_announcements_are_not_noise_but_its_confirmation_email_is():
     assert inbox.is_noise("Canvas <notifications@instructure.com>", "Confirm Email: Canvas - kyranlakhia@gmail.com", bulk)
     assert inbox.is_noise("Canvas <notifications@instructure.com>", "Security alert: new email address added", bulk)
     assert inbox.is_noise("Shop <deals@shop.com>", "Sale", bulk)
+
+
+def test_recent_emails_link_to_gmail():
+    msgs = [("Prof. Rivera <trivera@example.edu>", "HIST 210 office hours moved", at(7, 0), "", "", "1879082042730626238")]
+    night = collect(msgs, since(NOW))
+    hud = style.hud(NOW.date(), NOW, None, [], [], [], "sir", "", night)
+    assert hud["overnight"]["emails"][0]["url"] == "https://mail.google.com/mail/#all/thread-f:1879082042730626238"

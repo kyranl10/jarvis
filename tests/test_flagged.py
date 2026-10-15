@@ -61,3 +61,13 @@ def test_items_closed_in_jarvis_mail_leave_the_hud(tmp_path):
     assert [i["id"] for i in out["flagged"]] == ["a"]
     assert [d.get("id", d["subject"]) for d in out["dismissed"]] == ["DATA 495 – Tauroi Client Meeting", "b"]
     assert flagged.dismissed(now, path) == {"data 495 – tauroi client meeting"}
+
+
+def test_gists_pass_through_and_trim_after_plans(tmp_path):
+    path = tmp_path / "mail.json"
+    path.write_text(json.dumps({"flagged": [dict(item("2026-10-14T09:00:00-04:00", subject=f"S{n}"), gist="g" * 600)
+                                            for n in range(6)]}))
+    out = flagged.load(NOW, path)
+    assert len(out["flagged"]) == 6
+    assert out["flagged"][0]["gist"] == "g" * 600 and out["flagged"][-1]["gist"] == ""
+    assert len(json.dumps(out).encode()) <= flagged.LIMIT

@@ -24,6 +24,7 @@ class Overnight:
     dms: list[str] = field(default_factory=list)  # Instagram senders, one per message email
     dm_unknown: int = 0  # "you have unread messages" reminders that don't say who
     emails: list[tuple[str, str, str]] = field(default_factory=list)  # (from, subject, first sentence) forwarded from Outlook
+    links: dict[str, str] = field(default_factory=dict)  # lowercased subject -> the email in Gmail
 
     def __bool__(self) -> bool:
         return bool(self.comments or self.dms or self.dm_unknown or self.emails)
@@ -170,12 +171,12 @@ def is_noise(sender: str, subject: str, headers: dict | None = None, owner: str 
 
 def collect(messages, start: datetime) -> Overnight:
     """messages: (sender, subject, received datetime, body) tuples, plus the employer's name
-    as a fifth item when the email was sent to the work address."""
+    as a fifth item when the email was sent to the work address, and its Gmail thread id as a sixth."""
     found = Overnight()
-    for sender, subject, received, body, *work in messages:
+    for sender, subject, received, body, *extra in messages:
         if received < start:
             continue
-        kind = classify(sender, subject, body, work[0] if work else "")
+        kind = classify(sender, subject, body, extra[0] if extra else "")
         if not kind:
             continue
         if kind[0] == "comment":
@@ -185,9 +186,16 @@ def collect(messages, start: datetime) -> Overnight:
         elif kind[0] == "email":
             # The same subject twice (a resend, a reply) shows once, as the newest
             found.emails = [e for e in found.emails if e[1].lower() != kind[1][1].lower()] + [kind[1]]
+            if len(extra) > 1 and extra[1]:
+                found.links[kind[1][1].lower()] = gmail_link(extra[1])
         else:
             found.dm_unknown += 1
     return found
+
+
+def gmail_link(thread: str) -> str:
+    """The Gmail web address of a thread, from IMAP's decimal X-GM-THRID."""
+    return f"https://mail.google.com/mail/#all/thread-f:{thread}"
 
 
 def overnight(address: str, app_password: str, now: datetime, work_domain: str = "", work_name: str = "",
@@ -202,8 +210,9 @@ def overnight(address: str, app_password: str, now: datetime, work_domain: str =
         messages = []
         _, data = imap.search(None, f'(SINCE "{day}")')
         for num in data[0].split()[-100:]:
-            _, parts = imap.fetch(num, "(BODY.PEEK[])")
+            _, parts = imap.fetch(num, "(X-GM-THRID BODY.PEEK[])")
             msg = email.message_from_bytes(parts[0][1])
+            thread = re.search(rb"X-GM-THRID (\d+)", parts[0][0])
             received = parsedate_to_datetime(msg.get("Date")).astimezone(now.tzinfo)
             if address.lower() in _header(msg, "From").lower():
                 continue  # your own sent mail that a filter also labelled
@@ -212,7 +221,8 @@ def overnight(address: str, app_password: str, now: datetime, work_domain: str =
                 continue
             to = " ".join(_header(msg, h) for h in ("To", "Cc", "Delivered-To", "X-Forwarded-For")).lower()
             work = work_name if work_domain and "@" + work_domain in to else ""
-            messages.append((_header(msg, "From"), _header(msg, "Subject"), received, _text(msg), work))
+            messages.append((_header(msg, "From"), _header(msg, "Subject"), received, _text(msg), work,
+                             thread.group(1).decode() if thread else ""))
     finally:
         try:
             imap.logout()
