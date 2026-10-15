@@ -1,0 +1,192 @@
+{
+ "sudamericana_20261013": [
+  {
+   "id": "401913958",
+   "date": "2026-10-14T00:30Z",
+   "name": "Vasco da Gama at Boca Juniors",
+   "season": {
+    "year": 2026,
+    "type": 13913,
+    "slug": "semifinals"
+   },
+   "competitions": [
+    {
+     "id": "401913958",
+     "date": "2026-10-14T00:30Z",
+     "status": {
+      "type": {
+       "name": "STATUS_FULL_TIME",
+       "state": "post",
+       "completed": true
+      }
+     },
+     "broadcasts": [],
+     "competitors": [
+      {
+       "id": "5",
+       "homeAway": "home",
+       "winner": false,
+       "score": "0",
+       "team": {
+        "id": "5",
+        "displayName": "Boca Juniors"
+       }
+      },
+      {
+       "id": "3454",
+       "homeAway": "away",
+       "winner": true,
+       "score": "1",
+       "team": {
+        "id": "3454",
+        "displayName": "Vasco da Gama"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "mls_20261014": [
+  {
+   "id": "761865",
+   "date": "2026-10-14T23:30Z",
+   "name": "Charlotte FC at Columbus Crew",
+   "season": {
+    "year": 2026,
+    "type": 13846,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "761865",
+     "date": "2026-10-14T23:30Z",
+     "status": {
+      "type": {
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "Apple TV"
+       ]
+      }
+     ],
+     "competitors": [
+      {
+       "id": "183",
+       "homeAway": "home",
+       "winner": false,
+       "score": "0",
+       "records": [
+        {
+         "name": "All Splits",
+         "type": "total",
+         "summary": "8-5-15",
+         "abbreviation": "Total"
+        }
+       ],
+       "team": {
+        "id": "183",
+        "displayName": "Columbus Crew"
+       }
+      },
+      {
+       "id": "21300",
+       "homeAway": "away",
+       "winner": false,
+       "score": "0",
+       "records": [
+        {
+         "name": "All Splits",
+         "type": "total",
+         "summary": "13-7-8",
+         "abbreviation": "Total"
+        }
+       ],
+       "team": {
+        "id": "21300",
+        "displayName": "Charlotte FC"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "bundesliga_20261009": [
+  {
+   "id": "401884781",
+   "date": "2026-10-09T18:30Z",
+   "name": "Werder Bremen at Borussia Dortmund",
+   "season": {
+    "year": 2026,
+    "type": 14358,
+    "slug": "2026-27-german-bundesliga"
+   },
+   "competitions": [
+    {
+     "id": "401884781",
+     "date": "2026-10-09T18:30Z",
+     "status": {
+      "type": {
+       "name": "STATUS_FULL_TIME",
+       "state": "post",
+       "completed": true
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "Fandango"
+       ]
+      }
+     ],
+     "competitors": [
+      {
+       "id": "124",
+       "homeAway": "home",
+       "winner": false,
+       "score": "2",
+       "records": [
+        {
+         "name": "All Splits",
+         "type": "total",
+         "summary": "4-1-0",
+         "abbreviation": "Total"
+        }
+       ],
+       "team": {
+        "id": "124",
+        "displayName": "Borussia Dortmund"
+       }
+      },
+      {
+       "id": "137",
+       "homeAway": "away",
+       "winner": false,
+       "score": "2",
+       "records": [
+        {
+         "name": "All Splits",
+         "type": "total",
+         "summary": "2-2-1",
+         "abbreviation": "Total"
+        }
+       ],
+       "team": {
+        "id": "137",
+        "displayName": "Werder Bremen"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,62 @@
+name: Jarvis refresh
+
+on:
+  schedule:
+    # GitHub starts these late, so each one runs jarvis.loop, which refreshes every 15 minutes for hours
+    - cron: "*/15 * * * *"
+  workflow_dispatch:      # lets you click "Run workflow" to test it
+    inputs:
+      notify:
+        description: "Also send the phone notification"
+        type: boolean
+        default: false
+      loop:
+        description: "Keep refreshing every 15 minutes (and on the HUD's Sync button) for about 5.6 hours"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  actions: write  # so the refresh loop can start its own successor
+
+jobs:
+  brief:
+    runs-on: ubuntu-latest
+    # Scheduled runs and the loop's successors share one slot: one loop runs, at most one waits
+    concurrency: ${{ (github.event_name == 'schedule' || inputs.loop) && 'refresh-loop' || format('once-{0}', github.run_id) }}
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Check the mail data key
+        # Shows as a failed step (without stopping the refresh) if MAIL_KEY can't decrypt data/mail.enc
+        continue-on-error: true
+        run: python -c "import sys; from jarvis import mailstore; sys.exit(mailstore.SEALED.exists() and mailstore.read(mailstore.SEALED) is None)"
+        env:
+          MAIL_KEY: ${{ secrets.MAIL_KEY }}
+      - run: ${{ (github.event_name == 'schedule' || inputs.loop) && 'python -m jarvis.loop' || (inputs.notify && 'python -m jarvis.briefing' || 'python -m jarvis.briefing --quiet') }}
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          OUTLOOK_ICS_URL: ${{ secrets.OUTLOOK_ICS_URL }}
+          CANVAS_ICS_URL: ${{ secrets.CANVAS_ICS_URL }}
+          WORK_ICS_URL: ${{ secrets.WORK_ICS_URL }}
+          GROUPSPOT_ICAL_URL: ${{ secrets.GROUPSPOT_ICAL_URL }}
+          WORK_NAME: VenueHorn
+          WORK_EMAIL_DOMAIN: venuehorn.com
+          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          MAIL_KEY: ${{ secrets.MAIL_KEY }}
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
+          INSTAGRAM_USER_ID: ${{ secrets.INSTAGRAM_USER_ID }}
+          INSTAGRAM_TOKEN: ${{ secrets.INSTAGRAM_TOKEN }}
+          INSTAGRAM_WATCH: aplasticplant
+      - name: Start the next refresh loop
+        if: ${{ always() && (github.event_name == 'schedule' || inputs.loop) }}
+        run: gh workflow run morning.yml --ref master -f loop=true
+        env:
+          GH_TOKEN: ${{ github.token }}
