@@ -8,7 +8,10 @@ The tasks keep the judgment calls (reading postings, rating hire odds, applicati
   python -m jarvis.internships prune --jobs DIR
       Ids of stale jobs to delete: status new or denied, more than 7 days old by posting date (or added).
   python -m jarvis.internships hud --jobs DIR --matched N INTERN_JSON [JOBS_JSON]
-      The public jarvis-hud files: counts and postings still to review, never statuses or replies.
+      The public jarvis-hud files: counts and this week's postings, never statuses or replies. Next to
+      JOBS_JSON it also writes jobs.enc: the statuses, replies and older acted-on jobs, encrypted with
+      the mail key. The refresh decrypts it and sends it through the private ntfy "-jobs" topic, so the
+      internships page shows everything only when opened from Kyran's HUD link.
 
 DIR holds one JSON file per job (ArtifactData list with out_dir); a file is the job, or {"data": job}.
 """
@@ -109,8 +112,9 @@ def stale(jobs: list[dict], now_ms: int) -> list[str]:
             and (j.get("posted") or j.get("added") or now_ms) < now_ms - MAX_AGE_DAYS * DAY_MS]
 
 
-def hud_files(jobs: list[dict], matched: int, now_ms: int) -> tuple[dict, dict]:
-    """(intern.json, jobs.json) for the public HUD: counts and postings to review, nothing about applications."""
+def hud_files(jobs: list[dict], matched: int, now_ms: int) -> tuple[dict, dict, dict]:
+    """(intern.json, jobs.json, private): the public HUD files say nothing about applications; private
+    carries each acted-on job's status and reply, and the cards of acted-on jobs too old for the public list."""
     counts = {k: sum(j.get("status") in v for j in jobs) for k, v in STATUS_GROUPS.items()}
     fresh, seen = [], set()
     for j in sorted((j for j in jobs if j.get("status") == "new"), key=lambda j: -j.get("posted", 0)):
@@ -123,9 +127,17 @@ def hud_files(jobs: list[dict], matched: int, now_ms: int) -> tuple[dict, dict]:
     intern = {"updated": now_ms, "matched": matched, "counts": counts,
               "news": [{"status": j.get("status"), "at": j["news"]["at"]} for j in news],
               "fresh": [{"company": j["company"], "title": j["title"], "posted": j.get("posted")} for j in fresh]}
-    listing = sorted(({k: j[k] for k in PUBLIC_FIELDS if k in j} for j in jobs if j.get("status", "new") == "new"),
-                     key=lambda j: -j.get("posted", 0))
-    return intern, {"updated": now_ms, "matched": matched, "counts": counts, "jobs": listing}
+    # Public: every new job, plus acted-on ones from this week, all without status, so nothing tells them apart
+    recent = lambda j: (j.get("posted") or j.get("added") or 0) >= now_ms - MAX_AGE_DAYS * DAY_MS
+    shown = [j for j in jobs if j.get("status", "new") == "new" or recent(j)]
+    listing = sorted(({k: j[k] for k in PUBLIC_FIELDS if k in j} for j in shown), key=lambda j: -j.get("posted", 0))
+    acted = [j for j in jobs if j.get("status", "new") != "new"]
+    private = {"updated": now_ms,
+               "status": {j["id"]: {"s": j["status"], **({"n": j["news"]["text"], "a": j["news"]["at"]} if j.get("news") else {})}
+                          for j in acted},
+               "cards": [{k: j[k] for k in ("id", "company", "title", "url", "posted", "source") if k in j}
+                         for j in acted if not recent(j)]}
+    return intern, {"updated": now_ms, "matched": matched, "counts": counts, "jobs": listing}, private
 
 
 def _fetch_json(url: str):
@@ -156,10 +168,15 @@ def main(argv: list[str]) -> None:
     else:
         if not a.out:
             ap.error("hud needs INTERN_JSON [JOBS_JSON]")
-        intern, listing = hud_files(jobs, a.matched, now)
+        intern, listing, private = hud_files(jobs, a.matched, now)
         a.out[0].write_text(json.dumps(intern, indent=1) + "\n")
         if len(a.out) > 1:
             a.out[1].write_text(json.dumps(listing, separators=(",", ":")) + "\n")
+            from . import mailstore
+            if mailstore.key():
+                mailstore.seal(private, a.out[1].with_name("jobs.enc"))
+            else:
+                print("No mail key found, so jobs.enc (statuses for the private view) wasn't written.", file=sys.stderr)
         print(json.dumps(intern))
 
 

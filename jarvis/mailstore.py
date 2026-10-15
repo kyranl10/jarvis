@@ -51,6 +51,17 @@ def read(path: Path | None = None) -> dict | None:
     return data if isinstance(data, dict) else None
 
 
+def decrypt(raw: bytes) -> dict | None:
+    """Sealed bytes from anywhere (such as jarvis-hud's jobs.enc), or None without the right key."""
+    try:
+        from cryptography.fernet import Fernet
+        k = key()
+        data = json.loads(Fernet(k).decrypt(raw.strip()).decode("utf-8")) if k else None
+    except Exception:
+        return None
+    return data if isinstance(data, dict) else None
+
+
 def seal(data: dict, path: Path | None = None) -> None:
     from cryptography.fernet import Fernet
     path = path or SEALED

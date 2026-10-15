@@ -5,7 +5,7 @@ import os
 import sys
 from datetime import datetime, timedelta
 
-from . import band, calendar_mail, flagged, instagram, mailstore, sports, style
+from . import applications, band, calendar_mail, flagged, instagram, mailstore, sports, style
 from .calendar_source import coming_up, fetch_ics, label, parse_events
 from .canvas import due_soon
 from .config import Config
@@ -168,6 +168,13 @@ def main() -> None:
     voice = style.spoken(today, weather, events, coming, due, address, night, pma_news, day_of_games, insta_12h,
                          insta_expired)
     hud = style.hud(today, now, weather, events, coming, due, address, voice, recent, pma, since(now), games, insta)
+    apps = None
+    try:
+        apps = applications.load()
+        ok["applications"] = apps is not None
+    except Exception as exc:  # the rest still goes out without it
+        print(f"Application statuses unavailable: {exc.__class__.__name__}")
+        ok["applications"] = False
     inbox = flagged.load(now)  # emails Jarvis flagged, for the HUD's Inbox panel
     if mailstore.SEALED.exists() or mailstore.PLAIN.exists():
         ok["mail"] = inbox is not None
@@ -211,6 +218,8 @@ def main() -> None:
     publish_quietly(payload, "-hud")  # shown by the HUD page
     if inbox is not None:
         publish_quietly(json.dumps(inbox, ensure_ascii=False), "-mail")
+    if apps is not None:
+        publish_quietly(applications.fit(apps), "-jobs")  # application statuses for the internships page
     if args.quiet:
         print("HUD and spoken briefing refreshed.")
         return

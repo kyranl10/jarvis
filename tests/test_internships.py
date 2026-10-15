@@ -44,14 +44,26 @@ def test_hud_files_leak_no_application_details():
     jobs = [{"id": "n", "company": "Open Co", "title": "Data Intern", "status": "new", "posted": NOW, "fit": {"score": 7}},
             {"id": "a", "company": "Applied Co", "title": "Analyst", "status": "interview", "posted": NOW,
              "news": {"at": NOW - DAY, "text": "Applied Co wants to talk"}}]
-    intern, listing = ix.hud_files(jobs, 10, NOW)
-    text = json.dumps([intern, listing])
-    assert "Applied Co" not in text and "status" not in json.dumps(listing["jobs"])
+    jobs.append({"id": "old", "company": "Old Co", "title": "Analyst", "status": "applied", "posted": NOW - 20 * DAY})
+    intern, listing, private = ix.hud_files(jobs, 10, NOW)
+    assert "Applied Co wants" not in json.dumps([intern, listing]) and "Old Co" not in json.dumps([intern, listing])
+    assert "status" not in json.dumps(listing["jobs"])
     assert intern["counts"]["interview"] == 1 and intern["news"] == [{"status": "interview", "at": NOW - DAY}]
-    assert [j["id"] for j in listing["jobs"]] == ["n"] and intern["fresh"][0]["company"] == "Open Co"
+    assert [j["id"] for j in listing["jobs"]] == ["n", "a"] and intern["fresh"][0]["company"] == "Open Co"
+    assert private["status"] == {"a": {"s": "interview", "n": "Applied Co wants to talk", "a": NOW - DAY}, "old": {"s": "applied"}}
+    assert [c["id"] for c in private["cards"]] == ["old"]
 
 
 def test_load_jobs_reads_artifact_data_files(tmp_path):
     (tmp_path / "x1.json").write_text(json.dumps({"data": {"company": "A", "status": "new"}}))
     (tmp_path / "x2.json").write_text(json.dumps({"company": "B"}))
     assert [(j["id"], j["company"]) for j in ix.load_jobs(tmp_path)] == [("x1", "A"), ("x2", "B")]
+
+
+def test_private_payload_fits_ntfy():
+    from jarvis import applications
+    data = {"updated": NOW, "status": {f"j{i}": {"s": "applied", "n": "x" * 120, "a": NOW + i} for i in range(20)},
+            "cards": [{"id": f"c{i}", "company": "C" * 30, "title": "T" * 60} for i in range(40)]}
+    out = json.loads(applications.fit(data))
+    assert len(applications.fit(data).encode()) <= applications.LIMIT
+    assert len(out["status"]) == 20 and out["status"]["j19"].get("n")  # newest replies kept longest
