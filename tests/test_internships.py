@@ -67,3 +67,30 @@ def test_private_payload_fits_ntfy():
     out = json.loads(applications.fit(data))
     assert len(applications.fit(data).encode()) <= applications.LIMIT
     assert len(out["status"]) == 20 and out["status"]["j19"].get("n")  # newest replies kept longest
+
+
+def test_same_posting_under_different_spellings():
+    pairs = [
+        (("Federal Reserve Bank of Dallas", "2027 Intern - System IT (S&R and Statistics)"),
+         ("Federal Reserve System", "2027 Intern - System IT (S&R and Statistics)")),
+        (("Mastercard", "Data Engineering Intern, Summer 2027"),
+         ("MasterCard", "Data Engineering Intern, Summer 2027 – San Franscisco, CA, US")),
+        (("Stryker", "Customer One Intern (Data Analyst) - Cary, IL"),
+         ("Stryker", "Summer 2027 Internship - Data Analytics - Customer One - Illinois")),
+        (("Stryker", "Summer 2027 Internship - Statistical Programming"),
+         ("Stryker", "Summer 2027 Internship - Statistical Programming - California")),
+        (("Nike", "AI, Data & Machine Learning Engineering Undergraduate Internship"),
+         ("Nike", "NIKE, Inc. Artificial Intelligence, Data, & Machine Learning Engineering Undergraduate Internship Position Type")),
+        (("GE Vernova", "AI Evaluation & Benchmarking Intern"), ("GE Vernova", "AI Evaluation & Benchmarking Intern - AGI")),
+    ]
+    for (c1, t1), (c2, t2) in pairs:
+        assert ix.same_job({"company": c1, "title": t1}, {"company": c2, "title": t2}), (t1, t2)
+
+
+def test_different_postings_stay_apart():
+    tiktok = "TikTok"
+    assert not ix.same_job({"company": tiktok, "title": "Machine Learning Engineer Intern - E-Commerce Recommendation Video"},
+                           {"company": tiktok, "title": "Machine Learning Engineer Intern - E-Commerce Knowledge Graph"})
+    assert not ix.same_job({"company": "Stryker", "title": "Data Engineering - Indiana"},
+                           {"company": "Stryker", "title": "Statistical Programming - California"})
+    assert not ix.same_job({"company": "Acme", "title": "Data Analyst Intern"}, {"company": "Beta", "title": "Data Analyst Intern"})

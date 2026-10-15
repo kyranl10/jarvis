@@ -89,19 +89,58 @@ def from_unc(board: dict) -> list[dict]:
              "score": score(r["title"], ["Summer 2027"], r.get("locations", []))} for r in board.get("rows", [])]
 
 
+NOISE = {"intern", "interns", "internship", "internships", "summer", "fall", "spring", "winter", "co", "op", "position",
+         "type", "start", "the", "and", "of", "for", "inc", "llc", "corp", "us", "usa", "remote", "hybrid"}
+STATES = {"al", "ak", "az", "ar", "ca", "co", "ct", "de", "dc", "fl", "ga", "hi", "id", "il", "in", "ia", "ks", "ky", "la",
+          "me", "md", "ma", "mi", "mn", "ms", "mo", "mt", "ne", "nv", "nh", "nj", "nm", "ny", "nc", "nd", "oh", "ok", "or",
+          "pa", "ri", "sc", "sd", "tn", "tx", "ut", "vt", "va", "wa", "wv", "wi", "wy", "alabama", "alaska", "arizona",
+          "california", "colorado", "florida", "georgia", "illinois", "indiana", "massachusetts", "michigan", "minnesota",
+          "missouri", "jersey", "york", "carolina", "ohio", "oregon", "pennsylvania", "tennessee", "texas", "utah",
+          "virginia", "washington", "wisconsin"}
+
+
+def _company(name: str) -> list[str]:
+    return [w for w in re.findall(r"[a-z0-9]+", name.lower()) if w not in NOISE]
+
+
+def same_company(a: str, b: str) -> bool:
+    """'MasterCard' = 'Mastercard'; 'Federal Reserve System' = 'Federal Reserve Bank of Dallas' (first two words)."""
+    x, y = _company(a), _company(b)
+    if not x or not y:
+        return False
+    return x == y or " ".join(x) in " ".join(y) or " ".join(y) in " ".join(x) or (len(x) > 1 and x[:2] == y[:2])
+
+
+def title_words(title: str, company: str = "") -> set[str]:
+    """A title's meaningful words, cut to 5 letters so analyst/analytics match, without years, seasons, places or
+    the company's own name."""
+    text = re.sub(r"artificial intelligence", "ai", title.lower())
+    skip = NOISE | STATES | set(_company(company))
+    return {w[:5] for w in re.findall(r"[a-z0-9]+", text) if w not in skip and not re.fullmatch(r"20\d\d", w)}
+
+
+def same_job(a: dict, b: dict) -> bool:
+    """The same posting under different spellings: same company, and one title's words contain the other's."""
+    if not same_company(a.get("company", ""), b.get("company", "")):
+        return False
+    x, y = title_words(a.get("title", ""), a.get("company", "")), title_words(b.get("title", ""), b.get("company", ""))
+    return x == y or (len(min(x, y, key=len)) >= 2 and (x <= y or y <= x))
+
+
 def candidates(found: list[dict], known: list[dict], now_ms: int, min_score: int | None = 1) -> list[dict]:
     """New, unduplicated candidates inside the one-week rule, best first; min_score None keeps any score."""
     ids = {j["id"] for j in known}
-    pairs = {(j.get("company", "").lower(), j.get("title", "").lower()) for j in known}
+    seen = list(known)
     out = []
     for j in sorted(found, key=lambda j: (-j["score"], -j.get("posted", 0))):
-        pair = (j["company"].lower(), j["title"].lower())
-        if j["id"] in ids or pair in pairs or (min_score is not None and j["score"] < min_score):
+        if j["id"] in ids or (min_score is not None and j["score"] < min_score):
             continue
         if j.get("posted") and now_ms - j["posted"] > MAX_AGE_DAYS * DAY_MS:
             continue
+        if any(same_job(j, k) for k in seen):
+            continue
         ids.add(j["id"])
-        pairs.add(pair)
+        seen.append(j)
         out.append(j)
     return out
 
