@@ -2,7 +2,8 @@
 
 GitHub runs scheduled workflows hours late, so one job stays up and refreshes every 15 minutes,
 and at once whenever the HUD's Sync button posts to the "-sync" side topic. The workflow then
-starts the next job before this one hits GitHub's 6-hour limit.
+starts the next job before this one hits GitHub's 6-hour limit. It also refreshes as soon as a new
+commit lands (the mail triage pushing data/mail.enc), so nothing waits for a fresh runner.
 """
 import argparse
 import os
@@ -25,8 +26,14 @@ def sync_requested(topic: str, since: int) -> bool:
         return False
 
 
+def remote_head() -> str:
+    """The latest commit on the remote branch, or "" if git can't reach it."""
+    result = subprocess.run(["git", "ls-remote", "origin", "HEAD"], capture_output=True, text=True)
+    return result.stdout.split()[0] if result.returncode == 0 and result.stdout.strip() else ""
+
+
 def refresh() -> None:
-    # Pick up commits made while this job runs (the mail triage updates data/mail.json)
+    # Pick up commits made while this job runs (the mail triage updates data/mail.enc)
     subprocess.run(["git", "pull", "-q", "--ff-only"], capture_output=True)
     result = subprocess.run([sys.executable, "-m", "jarvis.briefing", "--quiet"], capture_output=True, text=True)
     # Only the status lines; the briefing text itself stays out of the public run log
@@ -44,11 +51,16 @@ def main() -> None:
     stop = time.time() + args.hours * 3600
     while time.time() < stop:
         started = int(time.time())
+        seen = remote_head()
         refresh()
         while time.time() < min(started + EVERY, stop):
             time.sleep(POLL)
             if sync_requested(topic, started):
                 print(time.strftime("%H:%M:%S"), "sync requested from the HUD", flush=True)
+                break
+            now = remote_head()
+            if seen and now and now != seen:
+                print(time.strftime("%H:%M:%S"), "new commit, refreshing", flush=True)
                 break
 
 
