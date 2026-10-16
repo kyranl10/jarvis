@@ -300,7 +300,8 @@ def hud(today: date, now: datetime, weather: dict | None, events, coming, due, a
             "comments": [{"who": w, "where": p, "said": t} for w, p, t in night.comments],
             "dms": len(night.dms) + night.dm_unknown,
             "dm_from": sorted(set(night.dms)),
-            "emails": [{"from": w, "subject": t, "snippet": _short(s, 90), "url": night.links.get(t.lower(), "")}
+            "emails": [{"from": w, "subject": t, "snippet": _short(s, 90), "url": night.links.get(t.lower(), ""),
+                        **({"at": night.times[t.lower()].isoformat(timespec="minutes")} if t.lower() in night.times else {})}
                        for w, t, s in night.emails[-4:]],
             "more_emails": max(0, len(night.emails) - 4),
         } if night else None,

@@ -25,6 +25,7 @@ class Overnight:
     dm_unknown: int = 0  # "you have unread messages" reminders that don't say who
     emails: list[tuple[str, str, str]] = field(default_factory=list)  # (from, subject, first sentence) forwarded from Outlook
     links: dict[str, str] = field(default_factory=dict)  # lowercased subject -> the email in Gmail
+    times: dict[str, datetime] = field(default_factory=dict)  # lowercased subject -> when it was received
 
     def __bool__(self) -> bool:
         return bool(self.comments or self.dms or self.dm_unknown or self.emails)
@@ -186,6 +187,7 @@ def collect(messages, start: datetime) -> Overnight:
         elif kind[0] == "email":
             # The same subject twice (a resend, a reply) shows once, as the newest
             found.emails = [e for e in found.emails if e[1].lower() != kind[1][1].lower()] + [kind[1]]
+            found.times[kind[1][1].lower()] = received
             if len(extra) > 1 and extra[1]:
                 found.links[kind[1][1].lower()] = gmail_link(extra[1])
         else:
