@@ -1,6 +1,19 @@
 {
- "newest_added": "Oct 14",
+ "newest_added": "Oct 19",
  "rows": [
+  {
+   "id": "unc-36383e3e0b",
+   "company": "Duolingo",
+   "title": "Data Scientist, Intern",
+   "url": "https://careers.duolingo.com/jobs/8888721002",
+   "locations": [
+    "New York, NY",
+    "Pittsburgh, PA"
+   ],
+   "posted": 1792411200000,
+   "sheetAdded": "Oct 19",
+   "source": "UNC board"
+  },
   {
    "id": "unc-ea89b9d6ea",
    "company": "TikTok",
@@ -131,6 +144,19 @@
    ],
    "posted": 1791979200000,
    "sheetAdded": "Oct 14",
+   "source": "UNC board"
+  },
+  {
+   "id": "unc-8ac0038071",
+   "company": "NASA",
+   "title": "Data Analytics SUMMER 2027 Intern",
+   "url": "https://stemgateway.nasa.gov/s/course-offering/a0BSJ000008jzlt2AA/data-analytics-summer-2027-intern",
+   "locations": [
+    "Edwards, CA"
+   ],
+   "posted": 1791892800000,
+   "sheetAdded": "Oct 19",
+   "deadline": "Mar 1",
    "source": "UNC board"
   }
  ]
