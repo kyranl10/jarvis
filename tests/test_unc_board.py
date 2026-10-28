@@ -29,6 +29,10 @@ def test_keeps_recent_undergrad_data_internships():
                     "title": "Data Analyst Intern, Summer 2027", "url": "https://x.co/1", "locations": ["Raleigh, NC"],
                     "posted": 1791806400000, "sheetAdded": "Oct 14", "deadline": "Dec 2", "source": "UNC board"}
     assert out["newest_added"] == "Oct 14"
+    assert out["skipped"] == ["Oct 14 Google | Data Scientist, Research Intern, PhD, Summer 2027: grad students only",
+                              "Oct 14 Acme | Software Engineer Intern: not a data role",
+                              "Oct 14 Acme | Data Engineer: role type 'Full-Time'",
+                              "Oct 14 Acme | Analytics Intern: location 'London, UK'"]
 
 
 def test_one_week_rule_and_old_rows():

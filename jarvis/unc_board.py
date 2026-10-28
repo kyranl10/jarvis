@@ -118,7 +118,7 @@ def parse_table(table: list[list[str]], links: list[str], today: date) -> dict:
     if not need <= col.keys():
         raise ValueError(f"UNC board columns changed; missing {sorted(need - col.keys())}")
     cell = lambda r, k: r[col[k]].strip() if k in col and col[k] < len(r) else ""
-    rows, newest, seen = [], None, set()
+    rows, skipped, newest, seen = [], [], None, set()
     for r, link in zip(table[start + 1:], links[start + 1:]):
         added = _full_date(cell(r, "added"), today)
         if added and (newest is None or added > newest):
@@ -126,15 +126,25 @@ def parse_table(table: list[list[str]], links: list[str], today: date) -> dict:
         title, company = cell(r, "title"), cell(r, "company")
         if not (title and company and added) or (today - added).days > ADDED_WITHIN:
             continue
-        if not ROLE.search(cell(r, "role")) or not is_data_role(title) or grad_only(title, cell(r, "program")):
+        skip = lambda why: skipped.append(f"{_short(added)} {company} | {title}: {why}")
+        if not ROLE.search(cell(r, "role")):
+            skip(f"role type {cell(r, 'role')!r}")
+            continue
+        if not is_data_role(title):
+            skip("not a data role")
+            continue
+        if grad_only(title, cell(r, "program")):
+            skip("grad students only")
             continue
         if job_id(company, title) in seen:  # the board sometimes lists a posting twice
             continue
         locations = [l.strip() for l in re.split(r"[;\n]", cell(r, "location")) if l.strip()]
         if locations and not any(US.search(l) for l in locations):
+            skip(f"location {cell(r, 'location')!r}")
             continue
         posted = _full_date(cell(r, "posted"), today) or added
         if (today - posted).days > MAX_AGE:
+            skip(f"posted {cell(r, 'posted')}, over a week ago")
             continue
         deadline = _full_date(cell(r, "deadline"), today + timedelta(days=330))  # deadlines are ahead, not behind
         link = link or next((c.strip() for c in r if c.strip().startswith("http")), "")
@@ -143,7 +153,7 @@ def parse_table(table: list[list[str]], links: list[str], today: date) -> dict:
                      "locations": locations[:4], "posted": _noon_ms(posted), "sheetAdded": _short(added),
                      **({"deadline": _short(deadline)} if deadline else {}), "source": "UNC board"})
     rows.sort(key=lambda j: -j["posted"])
-    return {"newest_added": _short(newest) if newest else None, "rows": rows}
+    return {"newest_added": _short(newest) if newest else None, "rows": rows, "skipped": skipped}
 
 
 def main(argv: list[str]) -> None:
@@ -151,8 +161,10 @@ def main(argv: list[str]) -> None:
     resp = requests.get(URL, timeout=60)
     resp.raise_for_status()
     data = parse_table(*read_xlsx(resp.content), datetime.now(TZ).date())
+    skipped = data.pop("skipped")
     out.write_text(json.dumps(data, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(f"UNC board: {len(data['rows'])} rows kept, newest added {data['newest_added']}")
+    print("Recent rows left out (public sheet fields only):", *skipped, sep="\n  ")
 
 
 if __name__ == "__main__":
