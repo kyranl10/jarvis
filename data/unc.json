@@ -1,6 +1,143 @@
 {
- "newest_added": "Oct 27",
+ "newest_added": "Oct 28",
  "rows": [
+  {
+   "id": "unc-0e9ab9b9f7",
+   "company": "UPS",
+   "title": "UPS Global Finance Summer 2027 Analytics Internship",
+   "url": "https://www.jobs-ups.com/us/en/job/R26030589/UPS-Global-Finance-Summer-2027-Analytics-Internship",
+   "locations": [
+    "Atlanta, GA"
+   ],
+   "posted": 1793188800000,
+   "sheetAdded": "Oct 28",
+   "source": "UNC board"
+  },
+  {
+   "id": "unc-fdac26edc9",
+   "company": "UPS",
+   "title": "Americas Region Business Analytics Summer 2027 Intern",
+   "url": "https://www.jobs-ups.com/us/en/job/R26030513/Americas-Region-Business-Analytics-Summer-2027-Intern",
+   "locations": [
+    "Atlanta, GA"
+   ],
+   "posted": 1793188800000,
+   "sheetAdded": "Oct 28",
+   "source": "UNC board"
+  },
+  {
+   "id": "unc-312e425bd2",
+   "company": "Nissan",
+   "title": "AI Intern - Summer 2027 - Dallas, TX or Franklin, TN",
+   "url": "https://alliance.wd3.myworkdayjobs.com/en-US/nissanjobs/job/AI-Intern---Summer-2027---Dallas--TX-or-Franklin--TN_R00214219?locationCountry=0eb156ca580c4db786a7894bdaa77450",
+   "locations": [
+    "Dallas, TX",
+    "Franklin, TN"
+   ],
+   "posted": 1793102400000,
+   "sheetAdded": "Oct 28",
+   "source": "UNC board"
+  },
+  {
+   "id": "unc-aa5a08b498",
+   "company": "Nissan",
+   "title": "Physical AI Manufacturing Intern - Summer 2027 - Smyrna, TN",
+   "url": "https://alliance.wd3.myworkdayjobs.com/en-US/nissanjobs/job/Physical-AI-Manufacturing-Intern---Summer-2027---Smyrna--TN_R00214526?locationCountry=0eb156ca580c4db786a7894bdaa77450",
+   "locations": [
+    "Smyrna, TN"
+   ],
+   "posted": 1793102400000,
+   "sheetAdded": "Oct 28",
+   "source": "UNC board"
+  },
+  {
+   "id": "unc-83d20cee77",
+   "company": "Visa",
+   "title": "Consulting & Analytics Intern - Summer 2027",
+   "url": "https://visa.wd5.myworkdayjobs.com/en-US/Visa_Early_Careers/job/US---Atlanta-GA/Consulting---Analytics-Intern---Summer-2027_REF089900W-2?locationCountry=bc33aa3152ec42d4995f4791a106ed09",
+   "locations": [
+    "Atlanta, GA"
+   ],
+   "posted": 1793102400000,
+   "sheetAdded": "Oct 28",
+   "deadline": "Nov 6",
+   "source": "UNC board"
+  },
+  {
+   "id": "unc-8b8640867b",
+   "company": "Visa",
+   "title": "Product Management Intern, Data and AI Team - Summer 2027",
+   "url": "https://visa.wd5.myworkdayjobs.com/en-US/Visa_Early_Careers/job/US---Foster-City-CA/Product-Management-Intern--Data-and-AI-Team---Summer-2027_REF089881W?locationCountry=bc33aa3152ec42d4995f4791a106ed09",
+   "locations": [
+    "Foster City, CA"
+   ],
+   "posted": 1793102400000,
+   "sheetAdded": "Oct 28",
+   "deadline": "Nov 6",
+   "source": "UNC board"
+  },
+  {
+   "id": "unc-60f5e941c8",
+   "company": "Visa",
+   "title": "Business Strategy Intern, Data and AI Team - Summer 2027",
+   "url": "https://visa.wd5.myworkdayjobs.com/en-US/Visa_Early_Careers/job/US---Foster-City-CA/Business-Strategy-Intern--Data-and-AI-Team---Summer-2027_REF089884W-1?locationCountry=bc33aa3152ec42d4995f4791a106ed09",
+   "locations": [
+    "Foster City, CA"
+   ],
+   "posted": 1793102400000,
+   "sheetAdded": "Oct 28",
+   "deadline": "Nov 6",
+   "source": "UNC board"
+  },
+  {
+   "id": "unc-e2a9b480ff",
+   "company": "Visa",
+   "title": "Data Science Intern, Data and AI Team – Summer 2027",
+   "url": "https://visa.wd5.myworkdayjobs.com/en-US/Visa_Early_Careers/job/US---Foster-City-CA/Data-Science-Intern--Data-and-AI-Team---Summer-2027_REF089883W?locationCountry=bc33aa3152ec42d4995f4791a106ed09",
+   "locations": [
+    "Foster City, CA"
+   ],
+   "posted": 1793102400000,
+   "sheetAdded": "Oct 28",
+   "deadline": "Nov 6",
+   "source": "UNC board"
+  },
+  {
+   "id": "unc-d7d487a2fd",
+   "company": "Nissan",
+   "title": "Pricing and Cross Car Line Analytics Intern - Franklin, TN - Summer 2027",
+   "url": "https://alliance.wd3.myworkdayjobs.com/en-US/nissanjobs/job/Pricing-and-Cross-Car-Line-Analytics-Intern---Franklin--TN---Summer-2027_R00214245?locationCountry=0eb156ca580c4db786a7894bdaa77450",
+   "locations": [
+    "Franklin, TN"
+   ],
+   "posted": 1793016000000,
+   "sheetAdded": "Oct 28",
+   "source": "UNC board"
+  },
+  {
+   "id": "unc-c592e8a50c",
+   "company": "Nissan",
+   "title": "Market Intelligence (Customer Trends & Insights) - Summer 2027 - Franklin, TN",
+   "url": "https://alliance.wd3.myworkdayjobs.com/en-US/nissanjobs/job/Market-Intelligence--Customer-Trends---Insights--Intern---Summer-2027---Franklin--TN_R00214283?locationCountry=0eb156ca580c4db786a7894bdaa77450",
+   "locations": [
+    "Franklin, TN"
+   ],
+   "posted": 1793016000000,
+   "sheetAdded": "Oct 28",
+   "source": "UNC board"
+  },
+  {
+   "id": "unc-3e5e1f5f27",
+   "company": "UPS",
+   "title": "MHR Summer 2027 Intern - Data Analytics (HR Systems)",
+   "url": "https://www.jobs-ups.com/us/en/job/R26039546/MHR-Summer-2027-Intern-Data-Analytics-HR-Systems",
+   "locations": [
+    "Atlanta, GA"
+   ],
+   "posted": 1793016000000,
+   "sheetAdded": "Oct 28",
+   "source": "UNC board"
+  },
   {
    "id": "unc-28ebdf2531",
    "company": "Nintendo",
