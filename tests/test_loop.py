@@ -17,3 +17,13 @@ def test_remote_head_reads_ls_remote(monkeypatch):
     assert loop.remote_head() == "abc123"
     out.update(stdout="", returncode=128)
     assert loop.remote_head() == ""
+
+
+def test_start_unc_board_runs_the_workflow(monkeypatch):
+    calls = []
+    out = {"returncode": 0}
+    monkeypatch.setattr(loop.subprocess, "run", lambda cmd, **kw: calls.append(cmd) or SimpleNamespace(**out))
+    assert loop.start_unc_board()
+    assert calls == [["gh", "workflow", "run", "unc.yml", "--ref", "master"]]
+    out["returncode"] = 1
+    assert not loop.start_unc_board()

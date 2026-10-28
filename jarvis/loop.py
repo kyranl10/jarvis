@@ -4,6 +4,8 @@ GitHub runs scheduled workflows hours late, so one job stays up and refreshes ev
 and at once whenever the HUD's Sync button posts to the "-sync" side topic. The workflow then
 starts the next job before this one hits GitHub's 6-hour limit. It also refreshes as soon as a new
 commit lands (the mail triage pushing data/mail.enc), so nothing waits for a fresh runner.
+GitHub drops most of the UNC board job's own schedule too (runs came ~6 hours apart, not 2), so the
+loop starts that job itself every couple of hours.
 """
 import argparse
 import os
@@ -15,6 +17,7 @@ import requests
 
 EVERY = 15 * 60  # seconds between routine refreshes
 POLL = 20        # seconds between checks for a Sync tap
+UNC_EVERY = 2 * 3600  # seconds between UNC board runs
 
 
 def sync_requested(topic: str, since: int) -> bool:
@@ -30,6 +33,13 @@ def remote_head() -> str:
     """The latest commit on the remote branch, or "" if git can't reach it."""
     result = subprocess.run(["git", "ls-remote", "origin", "HEAD"], capture_output=True, text=True)
     return result.stdout.split()[0] if result.returncode == 0 and result.stdout.strip() else ""
+
+
+def start_unc_board() -> bool:
+    """Start the UNC board workflow (it commits data/unc.json, which this loop then picks up)."""
+    result = subprocess.run(["gh", "workflow", "run", "unc.yml", "--ref", "master"], capture_output=True, text=True)
+    print(time.strftime("%H:%M:%S"), "UNC board", "started" if result.returncode == 0 else "couldn't start", flush=True)
+    return result.returncode == 0
 
 
 def refresh() -> None:
@@ -49,8 +59,11 @@ def main() -> None:
     args = parser.parse_args()
     topic = os.environ["NTFY_TOPIC"]
     stop = time.time() + args.hours * 3600
+    unc_at = 0.0
     while time.time() < stop:
         started = int(time.time())
+        if started - unc_at >= UNC_EVERY and start_unc_board():
+            unc_at = started
         seen = remote_head()
         refresh()
         while time.time() < min(started + EVERY, stop):
