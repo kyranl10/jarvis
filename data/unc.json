@@ -139,6 +139,45 @@
    "source": "UNC board"
   },
   {
+   "id": "unc-6c6ed21d96",
+   "company": "NC State Auditor",
+   "title": "Data Science Internships",
+   "url": "https://www.auditor.nc.gov/data-science-internships",
+   "locations": [
+    "Raleigh"
+   ],
+   "posted": 1793016000000,
+   "sheetAdded": "Oct 26",
+   "deadline": "Oct 30",
+   "source": "UNC board"
+  },
+  {
+   "id": "unc-06ab56444d",
+   "company": "NC State Auditor",
+   "title": "Data Engineering Internships",
+   "url": "https://www.auditor.nc.gov/data-engineering-internships",
+   "locations": [
+    "Raleigh"
+   ],
+   "posted": 1793016000000,
+   "sheetAdded": "Oct 26",
+   "deadline": "Oct 30",
+   "source": "UNC board"
+  },
+  {
+   "id": "unc-32e7805637",
+   "company": "NC State Auditor",
+   "title": "Data Analytics Internships",
+   "url": "https://www.auditor.nc.gov/data-analytics-internships",
+   "locations": [
+    "Raleigh"
+   ],
+   "posted": 1793016000000,
+   "sheetAdded": "Oct 26",
+   "deadline": "Oct 30",
+   "source": "UNC board"
+  },
+  {
    "id": "unc-28ebdf2531",
    "company": "Nintendo",
    "title": "Intern - Business Intelligence",
