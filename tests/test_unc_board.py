@@ -35,6 +35,15 @@ def test_keeps_recent_undergrad_data_internships():
                               "Oct 14 Acme | Analytics Intern: location 'London, UK'"]
 
 
+def test_bare_city_without_a_state_is_kept():
+    out = unc_board.parse(sheet(
+        '"","Data Science Internships","NC State Auditor","Internship","Raleigh","10/14/2026","","","","",""',
+        '"","Data Intern","Acme","Internship","Toronto, Canada","10/14/2026","","","","",""',
+        '"","Analytics Intern","Beta","Internship","London","10/14/2026","","","","",""',
+    ), TODAY)
+    assert [r["company"] for r in out["rows"]] == ["NC State Auditor"]
+
+
 def test_one_week_rule_and_old_rows():
     out = unc_board.parse(sheet(
         '"","Data Intern","Old Post","Internship","Remote","10/14/2026","9/24","","","",""',

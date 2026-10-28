@@ -31,6 +31,8 @@ NOT_DATA = re.compile(r"software engineer|hardware|firmware|embedded|mechanical|
 STILL_DATA = re.compile(r"data scien|analyst|analytics|machine learning", re.I)
 US = re.compile(r", ?(A[LKZR]|C[AOT]|D[EC]|FL|GA|HI|I[ADLN]|K[SY]|LA|M[ADEINOST]|N[CDEHJMVY]|O[HKR]|PA|RI|S[CD]|T[NX]"
                 r"|UT|V[AT]|W[AIVY])\b|\bRemote\b|United States|\bUSA?\b|Hybrid", re.I)
+ABROAD = re.compile(r"\b(UK|Canada|India|China|Japan|Germany|France|Ireland|Singapore|Mexico|London|Toronto)",
+                    re.I)
 UNDERGRAD = re.compile(r"\b(BS|BA|B\.S\.|Bachelor'?s?|Undergrad\w*)\b", re.I)
 GRAD_ONLY = re.compile(r"\b(PhD|Ph\.D\.?|MS|M\.S\.|Master'?s?|MBA|Graduate)\b", re.I)
 
@@ -72,6 +74,11 @@ def _short(d: date) -> str:
 
 def _noon_ms(d: date) -> int:
     return int(datetime(d.year, d.month, d.day, 12, tzinfo=timezone.utc).timestamp() * 1000)
+
+
+def _abroad(location: str) -> bool:
+    """'London, UK' or 'Toronto, Canada', but not a bare city like 'Raleigh' (the board sometimes leaves the state off)."""
+    return not US.search(location) and ("," in location or bool(ABROAD.search(location)))
 
 
 def job_id(company: str, title: str) -> str:
@@ -139,7 +146,7 @@ def parse_table(table: list[list[str]], links: list[str], today: date) -> dict:
         if job_id(company, title) in seen:  # the board sometimes lists a posting twice
             continue
         locations = [l.strip() for l in re.split(r"[;\n]", cell(r, "location")) if l.strip()]
-        if locations and not any(US.search(l) for l in locations):
+        if locations and all(_abroad(l) for l in locations):
             skip(f"location {cell(r, 'location')!r}")
             continue
         posted = _full_date(cell(r, "posted"), today) or added
