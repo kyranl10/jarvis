@@ -56,6 +56,8 @@ jobs:
           INSTAGRAM_TOKEN: ${{ secrets.INSTAGRAM_TOKEN }}
           INSTAGRAM_WATCH: aplasticplant
           GH_TOKEN: ${{ github.token }}  # the loop starts the UNC board job (unc.yml)
+          STATUS_SYNC_URL: ${{ secrets.STATUS_SYNC_URL }}  # Sync also starts the status check
+          STATUS_SYNC_TOKEN: ${{ secrets.STATUS_SYNC_TOKEN }}
       - name: Start the next refresh loop
         if: ${{ always() && (github.event_name == 'schedule' || inputs.loop) }}
         run: gh workflow run morning.yml --ref master -f loop=true

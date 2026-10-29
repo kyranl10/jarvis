@@ -6,6 +6,8 @@ starts the next job before this one hits GitHub's 6-hour limit. It also refreshe
 commit lands (the mail triage pushing data/mail.enc), so nothing waits for a fresh runner.
 GitHub drops most of the UNC board job's own schedule too (runs came ~6 hours apart, not 2), so the
 loop starts that job itself every couple of hours.
+A Sync tap also starts the "Internship status sync" scheduled task through its API trigger
+(STATUS_SYNC_URL and STATUS_SYNC_TOKEN), so application replies show up without waiting for :20.
 """
 import argparse
 import os
@@ -18,6 +20,7 @@ import requests
 EVERY = 15 * 60  # seconds between routine refreshes
 POLL = 20        # seconds between checks for a Sync tap
 UNC_EVERY = 2 * 3600  # seconds between UNC board runs
+STATUS_GAP = 10 * 60  # each status check is a Claude run, so repeated taps start at most one per 10 minutes
 
 
 def sync_requested(topic: str, since: int) -> bool:
@@ -42,6 +45,22 @@ def start_unc_board() -> bool:
     return result.returncode == 0
 
 
+def start_status_sync() -> bool:
+    """Fire the status sync scheduled task, if its API trigger is set up."""
+    url, token = os.environ.get("STATUS_SYNC_URL"), os.environ.get("STATUS_SYNC_TOKEN")
+    if not url or not token:
+        return False
+    try:
+        resp = requests.post(url, json={}, timeout=30, headers={
+            "Authorization": f"Bearer {token}", "anthropic-version": "2023-06-01",
+            "anthropic-beta": "experimental-cc-routine-2026-04-01"})
+        ok = resp.ok
+    except requests.RequestException:
+        ok = False
+    print(time.strftime("%H:%M:%S"), "status sync", "started" if ok else "couldn't start", flush=True)
+    return ok
+
+
 def refresh() -> None:
     # Pick up commits made while this job runs (the mail triage updates data/mail.enc)
     subprocess.run(["git", "pull", "-q", "--ff-only"], capture_output=True)
@@ -59,7 +78,7 @@ def main() -> None:
     args = parser.parse_args()
     topic = os.environ["NTFY_TOPIC"]
     stop = time.time() + args.hours * 3600
-    unc_at = 0.0
+    unc_at = status_at = 0.0
     while time.time() < stop:
         started = int(time.time())
         if started - unc_at >= UNC_EVERY and start_unc_board():
@@ -70,6 +89,8 @@ def main() -> None:
             time.sleep(POLL)
             if sync_requested(topic, started):
                 print(time.strftime("%H:%M:%S"), "sync requested from the HUD", flush=True)
+                if time.time() - status_at >= STATUS_GAP and start_status_sync():
+                    status_at = time.time()
                 break
             now = remote_head()
             if seen and now and now != seen:
