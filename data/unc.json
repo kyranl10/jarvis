@@ -1,41 +1,4 @@
 {
  "newest_added": "Nov 25",
- "rows": [
-  {
-   "id": "unc-cd8ff7b59a",
-   "company": "Anduril",
-   "title": "2027 Finance Data Analyst Intern",
-   "url": "https://job-boards.greenhouse.io/andurilindustries/jobs/5269977007?gh_jid=5269977007",
-   "locations": [
-    "Costa Mesa, CA"
-   ],
-   "posted": 1795176000000,
-   "sheetAdded": "Nov 20",
-   "source": "UNC board"
-  },
-  {
-   "id": "unc-0696aa0fb7",
-   "company": "Anduril",
-   "title": "2027 Machine Learning Engineer Intern",
-   "url": "https://job-boards.greenhouse.io/andurilindustries/jobs/5274037007?gh_jid=5274037007",
-   "locations": [
-    "Santa Ana, CA"
-   ],
-   "posted": 1795176000000,
-   "sheetAdded": "Nov 20",
-   "source": "UNC board"
-  },
-  {
-   "id": "unc-e231307ba8",
-   "company": "LabCorp",
-   "title": "People Analytics Intern",
-   "url": "https://careers.labcorp.com/intern-people-analytics/job/2640527",
-   "locations": [
-    "Durham, NC"
-   ],
-   "posted": 1795176000000,
-   "sheetAdded": "Nov 20",
-   "source": "UNC board"
-  }
- ]
+ "rows": []
 }
